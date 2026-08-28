@@ -78,21 +78,26 @@ def place(word, direction, grid, start):
     return grid
 
 def validate(grid, words):
+    numWordsFound = 0
     for w in words:
         for i in range(len(grid)):
             for j in range(len(grid[0])):
                 for direction, vector in DIRECTIONS.items():
                     startRow = i
                     startCol = j
-                    if(startRow==len(grid) and startCol == len(grid[0])):
-                        return False
                     for char in w:
+                        if startRow < 0 or startRow >= len(grid) or startCol < 0 or startCol >= len(grid[0]):
+                            break
                         if grid[startRow][startCol] == char:
                             startRow += vector[0]
                             startCol += vector[1]
+                            if(startRow-i == len(w) or startCol-j == len(w) ):
+                                numWordsFound += 1
+                        else:
+                            break
 
 
 
-    return True
+    return numWordsFound == len(words)
 
         
