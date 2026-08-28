@@ -119,9 +119,12 @@ def build_pdf(grid, wordInfo, categories, title, subtitle="", output_path="word_
     draw_word_list(c, page_h - 100)
     c.showPage()
 
-    # Page 3: answers
-    draw_title_block(c, "Answer Key", f"Solutions for {title}")
-    draw_grid(c, highlight_words=list(wordInfo.keys()))
-    c.showPage()
-
     c.save()
+
+    a = canvas.Canvas("answers.pdf", pagesize=letter)
+
+    draw_title_block(a, "Answer Key", f"Solutions for {title}")
+    draw_grid(a, highlight_words=list(wordInfo.keys()))
+    a.showPage()
+
+    a.save()
