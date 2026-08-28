@@ -1,12 +1,21 @@
 <!doctype html>
 <html>
-<head><title>Word Search Generator</title></head>
+<head>
+  <title>Word Search Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
 <body>
-  <form action="/generate" method="post">
+  <h1>Word Search Generator</h1>
+
+  <form id="puzzle-form" action="/generate" method="post">
     <label>Title: <input name="title" type="text"></label><br>
     <label>Grid size: <input name="size" type="number" value="10"></label><br>
     <!-- TODO: some way to enter categories/words -->
     <button type="submit">Generate</button>
   </form>
+
+  <div id="result"></div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
