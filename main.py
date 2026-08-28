@@ -12,9 +12,8 @@ from pdf_builder import build_pdf
 
 TITLE = "Duan and Song Family Word Search"
 SUBTITLE = "Ballet • Hockey • Photography — find every word below (words may run diagonally!)"
-SIZE = 10
-SEED = 42  # change/remove for a different random layout each run
-"""
+SIZE = 25
+
 CATEGORIES = {
     "Family": ["LINA", "WILLIAM", "ALEXANDER", "KAILAI", "NORAH","KIKO"],
     "Ballet": ["BALLET", "TUTU", "POINTE", "PLIE", "ARABESQUE", "PIROUETTE",
@@ -25,10 +24,10 @@ CATEGORIES = {
                      "PORTRAIT", "TRIPOD", "ZOOM", "FILTER", "FLASH"],
 }
 """
-CATEGORIES = {
-    "Family": ["LINA", "WILLIAM", "ALEXANDER", "KAILAI", "NORAH","KIKO"],
-}
-
+    CATEGORIES = {
+        "Family": ["LINA", "WILLIAM", "ALEXANDER", "KAILAI", "NORAH","KIKO"],
+    }
+"""
 
 def main():
     words = []
@@ -38,7 +37,13 @@ def main():
 
     
 
-    result = generate(words, size=SIZE)
+    grid, wordInfo, valid = generate(words, size=SIZE)
+
+    if(valid):
+        build_pdf(grid, wordInfo, CATEGORIES, TITLE, subtitle=SUBTITLE, output_path="word_search.pdf")
+    else:
+        print("need to change size")
+
 
 
 

@@ -1,5 +1,6 @@
 """
-Renders a generate.py result into a print-ready PDF: puzzle page + answer key.
+Renders a generate.py result into a print-ready PDF:
+puzzle page, highlighted answer key page, and a word-list page.
 """
 
 from reportlab.lib.pagesizes import letter
@@ -10,21 +11,22 @@ LIGHT_GRAY = HexColor("#e3e3e3")
 MID_GRAY = HexColor("#9a9a9a")
 
 
-def build_pdf(result, categories, output_path, title, subtitle):
+def build_pdf(grid, wordInfo, categories, title, subtitle="", output_path="word_search.pdf"):
     """
-    result: the dict returned by generator.generate()
-    categories: dict of category_name -> [words], used only for the
-        printed word list (order/grouping is cosmetic).
+    grid: 2D list of letters from generator.generate()
+    wordInfo: dict from generator.generate(), e.g.
+        {"HOCKEY": {"start": [r, c], "direction": [dr, dc]}, ...}
+    categories: dict of category_name -> [words], used for the word-list page
+    title: main puzzle title
+    subtitle: optional subtitle shown under the title on page 1
     output_path: where to write the .pdf
     """
-    grid = result["grid"]
-    size = result["size"]
-    placements = result["placements"]
+    size = len(grid)
 
     page_w, page_h = letter
     margin = 34
     top_gap = 96
-    bottom_gap = 210
+    bottom_gap = 60  
 
     grid_area_w = page_w - 2 * margin
     grid_area_h = page_h - top_gap - bottom_gap
@@ -39,29 +41,30 @@ def build_pdf(result, categories, output_path, title, subtitle):
         return x, y
 
     def draw_title_block(c, title_text, subtitle_text):
-        c.setFont("Helvetica-Bold", 20)
+        c.setFont("Helvetica", 18)
         c.setFillColor(black)
         c.drawCentredString(page_w / 2, page_h - 40, title_text)
-        c.setFont("Helvetica", 11)
-        c.setFillColor(MID_GRAY)
-        c.drawCentredString(page_w / 2, page_h - 58, subtitle_text)
+        if subtitle_text:
+            c.setFont("Helvetica", 11)
+            c.setFillColor(MID_GRAY)
+            c.drawCentredString(page_w / 2, page_h - 58, subtitle_text)
         c.setFillColor(black)
 
     def draw_grid(c, highlight_words=None):
         highlight_cells = set()
         if highlight_words:
             for w in highlight_words:
-                info = placements[w]
-                r, cc, dr, dc = info["row"], info["col"], info["dr"], info["dc"]
-                for i in range(info["len"]):
+                info = wordInfo[w]
+                r, cc = info["start"]
+                dr, dc = info["direction"]
+                for i in range(len(w)):
                     highlight_cells.add((r + dr * i, cc + dc * i))
 
         c.setLineWidth(1.4)
         c.setStrokeColor(black)
         c.rect(grid_left, grid_top_y - grid_w, grid_w, grid_w, stroke=1, fill=0)
-
         font_size = cell * 0.62
-        c.setFont("Courier-Bold", font_size)
+        c.setFont("Helvetica", font_size)
 
         for r in range(size):
             for col in range(size):
@@ -82,6 +85,7 @@ def build_pdf(result, categories, output_path, title, subtitle):
         x = margin
         y = top_y
         c.setFont("Helvetica-Bold", 12)
+        c.setFillColor(black)
         c.drawString(x, y, "Find these words:")
         y -= 20
 
@@ -102,16 +106,22 @@ def build_pdf(result, categories, output_path, title, subtitle):
 
     c = canvas.Canvas(output_path, pagesize=letter)
 
-    # Page 1: puzzle
+    # Page 1: puzzle grid + title only
     draw_title_block(c, title, subtitle)
     draw_grid(c)
-    draw_word_list(c, page_h - top_gap - grid_w - 26)
     c.showPage()
 
-    # Page 2: answer key
+    # Page 2: categories
+
+    c.setFont("Helvetica-Bold", 18)
+    c.setFillColor(black)
+    c.drawCentredString(page_w / 2, page_h - 50, "Word List")
+    draw_word_list(c, page_h - 100)
+    c.showPage()
+
+    # Page 3: answers
     draw_title_block(c, "Answer Key", f"Solutions for {title}")
-    draw_grid(c, highlight_words=list(placements.keys()))
-    draw_word_list(c, page_h - top_gap - grid_w - 26)
+    draw_grid(c, highlight_words=list(wordInfo.keys()))
     c.showPage()
 
     c.save()

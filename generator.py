@@ -10,6 +10,7 @@ DIRECTIONS = {
 def generate(words, size):
     grid = [[" " for _ in range(size)] for _ in range(size)];
     allLetters = ""
+    wordInfo = {}
 
     sortedWords = sortLength(words)
 
@@ -41,13 +42,13 @@ def generate(words, size):
                     break
             i += 1
         if(valid):
+            wordInfo[w] = {"start": startCords, "direction": finalDirection}
             grid = place(w, vector, grid, startCords)
 
     grid = gridFill(grid, allLetters)
 
-    for rows in grid:
-        print(rows)
-    print(validate(grid,words))
+
+    return grid, wordInfo, validate(grid,words)
 
 def gridFill(grid, letters):
     for i in range(len(grid)):
@@ -69,10 +70,12 @@ def sortLength(words):
 
 def place(word, direction, grid, start):
 
+    row = start[0]
+    col = start[1]
     for char in word:
-        grid[start[0]][start[1]] = char
-        start[0] = start[0]+direction[0]
-        start[1] = start[1]+direction[1]
+        grid[row][col] = char
+        row = row+direction[0]
+        col = col+direction[1]
 
 
     return grid
